@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.FileNotFoundException;
 //import java.lang.reflect.Array;
@@ -72,8 +71,8 @@ public class Main {
             System.out.println("File not found.");
             // e.printStackTrace();
         }
-        //Collections.sort(wordList);
-        Collections.shuffle(wordList);
+        Collections.sort(wordList);
+        //Collections.shuffle(wordList);
         System.out.println("Done.");
 
         sc = new Scanner(System.in);
@@ -82,7 +81,8 @@ public class Main {
         System.out.println("Total words remaining: " + wordsRemaining);
 
         // Calculate first recommendation with available words.
-        CalculateRecommendation(wordList, allValidWords, 0);
+        //CalculateRecommendationV1(wordList, allValidWords, 0);
+        CalculateRecommendationV2(wordList, 0);
 
         // this loop will run for each attempt.
         for (int attemptNumber = 1; attemptNumber <= 6; attemptNumber++) {
@@ -142,7 +142,8 @@ public class Main {
 
             // Print out possible words and a recommendation.
             System.out.println("Possible words:\n" + wordList.toString());
-            CalculateRecommendation(wordList, allValidWords, attemptNumber);
+            //CalculateRecommendationV1(wordList, allValidWords, attemptNumber);
+            CalculateRecommendationV2(wordList, attemptNumber);
         }
         sc.close();
     }
@@ -150,7 +151,7 @@ public class Main {
     public static void EliminateWords(ArrayList<String> wordList, ArrayList<WordleLetter> guessWord) {
         for (WordleLetter wordleLetter : guessWord) {
             if (wordleLetter.Color.equals("black")) {
-                // remove all words that have this letter at this index
+                //remove all words that have this letter at THIS index
                 for (int wordIndex = 0; wordIndex < wordList.size(); wordIndex++) {
                     if (wordList.get(wordIndex).charAt(wordleLetter.Index) == wordleLetter.Letter.charAt(0)) {
                         wordList.remove(wordIndex);
@@ -202,7 +203,203 @@ public class Main {
         }
     }
 
-    public static String CalculateRecommendation(ArrayList<String> wordList, ArrayList<String> allValidWords, int attemptNumber) {
+    public static String CalculateRecommendationV2(ArrayList<String> wordList, int attemptNumber)
+    {
+        //The following will calculate the best word based on avg number of words eliminated when simulated with every possible answer.
+        //Each word will be scored based on how many words it eliminates on average.
+        double trueBestWordScore = 0;
+        ArrayList<String> bestWordList = new ArrayList<>();
+        if(attemptNumber == 0)
+        {
+            //Recommended starting word(s): [raise], score: 2261.7727077055533
+            //skip algorithm on first attempt because it takes like 10 min.
+            bestWordList.add("raise");
+        }
+        else
+        {
+            System.out.println(6 - attemptNumber + " remaining guesses.");
+            ArrayList<String> problemWords = new ArrayList<>();
+            problemWords = FindProblemSubstrings(wordList, 6 - attemptNumber);
+            for(String possibleGuess : wordList)
+            {
+                double avgScore = 0;
+                for(String possibleAnswer : wordList)
+                {
+                    //Copy wordList
+                    ArrayList<String> wordListCopy = new ArrayList<>();
+                    for(String word : wordList)
+                    {
+                        wordListCopy.add(word);
+                    }
+                    ArrayList<WordleLetter> guessWord = new ArrayList<WordleLetter>();
+                    for(int letterIndex = 0; letterIndex < 5; letterIndex++)
+                    {
+                        WordleLetter wordleLetter = new WordleLetter();
+                        wordleLetter.Index = letterIndex;
+                        wordleLetter.Letter = possibleGuess.substring(letterIndex, letterIndex + 1);
+                        if(possibleAnswer.substring(letterIndex, letterIndex + 1).equals(wordleLetter.Letter))
+                        {
+                            wordleLetter.Color = "green";
+                        }
+                        else if(possibleAnswer.contains(wordleLetter.Letter))
+                        {
+                            wordleLetter.Color = "yellow";
+                        }
+                        else
+                        {
+                            wordleLetter.Color = "black";
+                        }
+                        guessWord.add(wordleLetter);
+                    }
+                    EliminateWords(wordListCopy, guessWord);
+                    avgScore += wordList.size() - wordListCopy.size();
+                }
+                avgScore = avgScore / wordList.size();
+                avgScore = problemWords.contains(possibleGuess) ? avgScore * .85 : avgScore;
+                System.out.println("Word: " + possibleGuess + ", score: " + avgScore);
+                if(avgScore > trueBestWordScore)
+                {
+                    bestWordList.clear();
+                    trueBestWordScore = avgScore;
+                    bestWordList.add(possibleGuess);
+                }
+                else if(avgScore == trueBestWordScore)
+                {
+                    bestWordList.add(possibleGuess);
+                }
+            }
+        }
+
+        System.out.println("Recommended word(s): " + bestWordList.toString() + ", score: " + trueBestWordScore);
+        
+        return bestWordList.get(0);
+    }
+
+    public static ArrayList<String> FindProblemSubstrings(ArrayList<String> remainingWords, int remainingGuesses)
+    {
+        ArrayList<String> problemWords = new ArrayList<>();
+        if(remainingGuesses == 6)
+        {
+            return problemWords;
+        }
+        Map<String, Integer> allLetterPairsWithFrequencyAtIndex_0_2 = new HashMap<String, Integer>();
+        Map<String, Integer> allLetterPairsWithFrequencyAtIndex_1_3 = new HashMap<String, Integer>();
+        Map<String, Integer> allLetterPairsWithFrequencyAtIndex_2_4 = new HashMap<String, Integer>();
+        Map<String, Integer> allLetterPairsWithFrequencyAtIndex_3_5 = new HashMap<String, Integer>();
+        for(String word : remainingWords)
+        {
+            String substring_0_2 = word.substring(0,2);
+            String substring_1_3 = word.substring(1,3);
+            String substring_2_4 = word.substring(2,4);
+            String substring_3_5 = word.substring(3,5);
+            if(!allLetterPairsWithFrequencyAtIndex_0_2.containsKey(substring_0_2))
+            {
+                allLetterPairsWithFrequencyAtIndex_0_2.put(substring_0_2, 1);
+            }
+            else
+            {
+                int value = allLetterPairsWithFrequencyAtIndex_0_2.get(substring_0_2);
+                allLetterPairsWithFrequencyAtIndex_0_2.put(substring_0_2, value + 1);
+            }
+
+            if(!allLetterPairsWithFrequencyAtIndex_1_3.containsKey(substring_1_3))
+            {
+                allLetterPairsWithFrequencyAtIndex_1_3.put(substring_1_3, 1);
+            }
+            else
+            {
+                int value = allLetterPairsWithFrequencyAtIndex_1_3.get(substring_1_3);
+                allLetterPairsWithFrequencyAtIndex_1_3.put(substring_1_3, value + 1);
+            }
+
+            if(!allLetterPairsWithFrequencyAtIndex_2_4.containsKey(substring_2_4))
+            {
+                allLetterPairsWithFrequencyAtIndex_2_4.put(substring_2_4, 1);
+            }
+            else
+            {
+                int value = allLetterPairsWithFrequencyAtIndex_2_4.get(substring_2_4);
+                allLetterPairsWithFrequencyAtIndex_2_4.put(substring_2_4, value + 1);
+            }
+
+            if(!allLetterPairsWithFrequencyAtIndex_3_5.containsKey(substring_3_5))
+            {
+                allLetterPairsWithFrequencyAtIndex_3_5.put(substring_3_5, 1);
+            }
+            else
+            {
+                int value = allLetterPairsWithFrequencyAtIndex_3_5.get(substring_3_5);
+                allLetterPairsWithFrequencyAtIndex_3_5.put(substring_3_5, value + 1);
+            }
+        }
+
+        for(String key : allLetterPairsWithFrequencyAtIndex_0_2.keySet())
+        {
+            int value = allLetterPairsWithFrequencyAtIndex_0_2.get(key);
+            if(value > remainingGuesses)
+            {
+                System.out.println(value + " <" + key + "> strings at index 0-2");
+                for(String word : remainingWords)
+                {
+                    if(word.substring(0, 2).equals(key))
+                    {
+                        problemWords.add(word);
+                    }
+                }
+            }
+        }
+
+        for(String key : allLetterPairsWithFrequencyAtIndex_1_3.keySet())
+        {
+            int value = allLetterPairsWithFrequencyAtIndex_1_3.get(key);
+            if(value > remainingGuesses)
+            {
+                System.out.println(value + " <" + key + "> strings at index 1-3");
+                for(String word : remainingWords)
+                {
+                    if(word.substring(1, 3).equals(key))
+                    {
+                        problemWords.add(word);
+                    }
+                }
+            }
+        }
+
+        for(String key : allLetterPairsWithFrequencyAtIndex_2_4.keySet())
+        {
+            int value = allLetterPairsWithFrequencyAtIndex_2_4.get(key);
+            if(value > remainingGuesses)
+            {
+                System.out.println(value + " <" + key + "> strings at index 2-4");
+                for(String word : remainingWords)
+                {
+                    if(word.substring(2, 4).equals(key))
+                    {
+                        problemWords.add(word);
+                    }
+                }
+            }
+        }
+
+        for(String key : allLetterPairsWithFrequencyAtIndex_3_5.keySet())
+        {
+            int value = allLetterPairsWithFrequencyAtIndex_3_5.get(key);
+            if(value > remainingGuesses)
+            {
+                System.out.println(value + " <" + key + "> strings at index 3-5");
+                for(String word : remainingWords)
+                {
+                    if(word.substring(3, 5).equals(key))
+                    {
+                        problemWords.add(word);
+                    }
+                }
+            }
+        }
+        return problemWords;
+    }
+
+    public static String CalculateRecommendationV1(ArrayList<String> wordList, ArrayList<String> allValidWords, int attemptNumber) {
         boolean isHardModeEnabled = true;
         Map<Character, Integer> firstPlaceLetterMap = new HashMap<Character, Integer>();
         Map<Character, Integer> secondPlaceLetterMap = new HashMap<Character, Integer>();
@@ -270,6 +467,8 @@ public class Main {
         double bestWordScore = 0;
         String bestWord = "";
         ArrayList<String> bestWordList = new ArrayList<>();
+        ArrayList<String> problemWords = new ArrayList<>();
+        problemWords = FindProblemSubstrings(wordList, 6 - attemptNumber);
 
         for (String word : wordList) {
             double wordScore = 0;
@@ -282,11 +481,6 @@ public class Main {
             letterHeatmapScore += thirdPlaceLetterMap.get(word.charAt(2));
             letterHeatmapScore += fourthPlaceLetterMap.get(word.charAt(3));
             letterHeatmapScore += fifthPlaceLetterMap.get(word.charAt(4));
-            boolean isErWord = false;
-            if(word.substring(3,5).equals("er"))
-            {
-                isErWord = true;
-            }
             for (int i = 0; i < word.length(); i++) {
                 char letter = word.charAt(i);
                 letterTotalsScore += allLetterMap.get(letter);
@@ -301,7 +495,7 @@ public class Main {
                 System.out.println("Word: " + word + ", " + wordScore);
             }
             wordScore = hasRepeats && attemptNumber < 2 ? wordScore * .85 : wordScore;
-            wordScore = isErWord && attemptNumber < 4 ? wordScore *.6 : wordScore;
+            wordScore = problemWords.contains(word) ? wordScore * .85 : wordScore;
             if (wordScore > bestWordScore && !word.equals("stare")) {
                 bestWordList.clear();
                 bestWordList.add(word);
@@ -349,9 +543,9 @@ public class Main {
             return bestWord;
         }
         System.out.println("Recommended word(s): " + bestWordList.toString() + ", " + bestWordScore);
-        return bestWord;
+        return bestWordList.get(0);
     }
-
+    
     public static void PopulateLetterMap(Map<Character, Integer> letterMap) {
         letterMap.put('a', 0);
         letterMap.put('b', 0);
