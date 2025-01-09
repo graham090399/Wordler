@@ -1,5 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 //import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +43,7 @@ class WordleLetter {
 };
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException{
         System.out.print("Loading words... ");
         Scanner sc;
         File words;
@@ -71,8 +73,8 @@ public class Main {
             System.out.println("File not found.");
             // e.printStackTrace();
         }
-        Collections.sort(wordList);
-        //Collections.shuffle(wordList);
+        //Collections.sort(wordList);
+        Collections.shuffle(wordList);
         System.out.println("Done.");
 
         sc = new Scanner(System.in);
@@ -203,17 +205,20 @@ public class Main {
         }
     }
 
-    public static String CalculateRecommendationV2(ArrayList<String> wordList, int attemptNumber)
+    public static String CalculateRecommendationV2(ArrayList<String> wordList, int attemptNumber) throws IOException
     {
         //The following will calculate the best word based on avg number of words eliminated when simulated with every possible answer.
         //Each word will be scored based on how many words it eliminates on average.
         double trueBestWordScore = 0;
         ArrayList<String> bestWordList = new ArrayList<>();
+        // ArrayList<Integer> bestScores = new ArrayList<>();
+        // Map<Integer, String> bestScoresMap = new HashMap<Integer, String>();
         if(attemptNumber == 0)
         {
-            //Recommended starting word(s): [raise], score: 2261.7727077055533
-            //skip algorithm on first attempt because it takes like 10 min.
-            bestWordList.add("raise");
+            //Recommended starting word(s): [arise], score: 2259
+            //pre-run algorithm for first attempt because it takes like 10 min. draft
+            //taken from firstwordscores file
+            bestWordList.add("arise");
         }
         else
         {
@@ -256,6 +261,8 @@ public class Main {
                 }
                 avgScore = avgScore / wordList.size();
                 avgScore = problemWords.contains(possibleGuess) ? avgScore * .85 : avgScore;
+                // bestScores.add((int)avgScore);
+                // bestScoresMap.put((int)avgScore, possibleGuess);
                 System.out.println("Word: " + possibleGuess + ", score: " + avgScore);
                 if(avgScore > trueBestWordScore)
                 {
@@ -268,6 +275,14 @@ public class Main {
                     bestWordList.add(possibleGuess);
                 }
             }
+
+            // Collections.sort(bestScores);
+            // FileWriter writer = new FileWriter("firstwordscores.txt");
+            // for(int score : bestScores)
+            // {
+            //     writer.write(bestScoresMap.get(score) + ", score: " + score + "\n");
+            // }
+            // writer.close();
         }
 
         System.out.println("Recommended word(s): " + bestWordList.toString() + ", score: " + trueBestWordScore);
