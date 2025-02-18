@@ -144,8 +144,9 @@ public class Main {
 
             // Print out possible words and a recommendation.
             System.out.println("Possible words:\n" + wordList.toString());
-            //CalculateRecommendationV1(wordList, allValidWords, attemptNumber);
+            String version1Recommendation = CalculateRecommendationV1(wordList, allValidWords, attemptNumber);
             CalculateRecommendationV2(wordList, attemptNumber);
+            System.out.println("Wordle bot 1.0 recommendation: " + version1Recommendation);
         }
         sc.close();
     }
@@ -263,7 +264,7 @@ public class Main {
                 avgScore = problemWords.contains(possibleGuess) ? avgScore * .85 : avgScore;
                 // bestScores.add((int)avgScore);
                 // bestScoresMap.put((int)avgScore, possibleGuess);
-                System.out.println("Word: " + possibleGuess + ", score: " + avgScore);
+                System.out.println("Word: " + possibleGuess + ", score: " + (int)avgScore);
                 if(avgScore > trueBestWordScore)
                 {
                     bestWordList.clear();
@@ -285,7 +286,7 @@ public class Main {
             // writer.close();
         }
 
-        System.out.println("Recommended word(s): " + bestWordList.toString() + ", score: " + trueBestWordScore);
+        System.out.println("Wordle bot 2.0 recommended word(s): " + bestWordList.toString() + ", score: " + trueBestWordScore);
         
         return bestWordList.get(0);
     }
@@ -471,19 +472,19 @@ public class Main {
                 fifthPlaceLetterMap.put(letter, value + 1);
             }
         }
-        System.out.println("First place letter map:\n" + firstPlaceLetterMap.toString());
-        System.out.println("Second place letter map:\n" + secondPlaceLetterMap.toString());
-        System.out.println("Third place letter map:\n" + thirdPlaceLetterMap.toString());
-        System.out.println("Fourth place letter map:\n" + fourthPlaceLetterMap.toString());
-        System.out.println("Fifth place letter map:\n" + fifthPlaceLetterMap.toString());
-        System.out.println("Letter totals map:\n" + allLetterMap.toString());
-        System.out.println("Number of words containing each letter:\n" + wordsWithLetterMap.toString());
+        // System.out.println("First place letter map:\n" + firstPlaceLetterMap.toString());
+        // System.out.println("Second place letter map:\n" + secondPlaceLetterMap.toString());
+        // System.out.println("Third place letter map:\n" + thirdPlaceLetterMap.toString());
+        // System.out.println("Fourth place letter map:\n" + fourthPlaceLetterMap.toString());
+        // System.out.println("Fifth place letter map:\n" + fifthPlaceLetterMap.toString());
+        // System.out.println("Letter totals map:\n" + allLetterMap.toString());
+        // System.out.println("Number of words containing each letter:\n" + wordsWithLetterMap.toString());
 
         double bestWordScore = 0;
         String bestWord = "";
         ArrayList<String> bestWordList = new ArrayList<>();
-        ArrayList<String> problemWords = new ArrayList<>();
-        problemWords = FindProblemSubstrings(wordList, 6 - attemptNumber);
+        //ArrayList<String> problemWords = new ArrayList<>();
+        //problemWords = FindProblemSubstrings(wordList, 6 - attemptNumber);
 
         for (String word : wordList) {
             double wordScore = 0;
@@ -507,10 +508,10 @@ public class Main {
             }
             wordScore = letterHeatmapScore + letterTotalsScore + wordsWithLetterScore;
             if (attemptNumber > 0) {
-                System.out.println("Word: " + word + ", " + wordScore);
+                //System.out.println("Word: " + word + ", " + wordScore);
             }
             wordScore = hasRepeats && attemptNumber < 2 ? wordScore * .85 : wordScore;
-            wordScore = problemWords.contains(word) ? wordScore * .85 : wordScore;
+            //wordScore = problemWords.contains(word) ? wordScore * .85 : wordScore;
             if (wordScore > bestWordScore && !word.equals("stare")) {
                 bestWordList.clear();
                 bestWordList.add(word);
