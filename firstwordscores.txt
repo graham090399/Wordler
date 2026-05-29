@@ -2318,6 +2318,6 @@ saner, score: 2252
 saner, score: 2252
 saner, score: 2252
 arose, score: 2256
-irate, score: 2258
-arise, score: 2259
+irate, score: 2258 used
+arise, score: 2259 used
 raise, score: 2261 used

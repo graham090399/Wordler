@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+// TODO: word: shush, guess order: arise->floss-> gypsy should not be possible
+// TODO: word: blast, arose->salsa->class, class should not be possible because second S is not possible
+
 // E - 11.1607%
 // A - 8.4966%
 // R - 7.5809%
@@ -73,7 +76,15 @@ public class Main {
             System.out.println("File not found.");
             // e.printStackTrace();
         }
-        //Collections.sort(wordList);
+
+        // FileWriter writer = new FileWriter("OutputFile.txt");
+        // Collections.sort(wordList);
+        // for(String word : wordList)
+        // {
+        //     writer.write(word + "\n");
+        // }
+        // writer.close();
+
         Collections.shuffle(wordList);
         System.out.println("Done.");
 
@@ -216,10 +227,10 @@ public class Main {
         // Map<Integer, String> bestScoresMap = new HashMap<Integer, String>();
         if(attemptNumber == 0)
         {
-            //Recommended starting word(s): [arise], score: 2259
+            //Recommended starting word(s): [arose], score: 2259
             //pre-run algorithm for first attempt because it takes like 10 min. draft
             //taken from firstwordscores file
-            bestWordList.add("arise");
+            bestWordList.add("arose");
         }
         else
         {
@@ -354,7 +365,7 @@ public class Main {
             int value = allLetterPairsWithFrequencyAtIndex_0_2.get(key);
             if(value > remainingGuesses)
             {
-                System.out.println(value + " <" + key + "> strings at index 0-2");
+                //System.out.println(value + " <" + key + "> strings at index 0-2");
                 for(String word : remainingWords)
                 {
                     if(word.substring(0, 2).equals(key))
@@ -370,7 +381,7 @@ public class Main {
             int value = allLetterPairsWithFrequencyAtIndex_1_3.get(key);
             if(value > remainingGuesses)
             {
-                System.out.println(value + " <" + key + "> strings at index 1-3");
+                //System.out.println(value + " <" + key + "> strings at index 1-3");
                 for(String word : remainingWords)
                 {
                     if(word.substring(1, 3).equals(key))
@@ -386,7 +397,7 @@ public class Main {
             int value = allLetterPairsWithFrequencyAtIndex_2_4.get(key);
             if(value > remainingGuesses)
             {
-                System.out.println(value + " <" + key + "> strings at index 2-4");
+                //System.out.println(value + " <" + key + "> strings at index 2-4");
                 for(String word : remainingWords)
                 {
                     if(word.substring(2, 4).equals(key))
@@ -402,7 +413,7 @@ public class Main {
             int value = allLetterPairsWithFrequencyAtIndex_3_5.get(key);
             if(value > remainingGuesses)
             {
-                System.out.println(value + " <" + key + "> strings at index 3-5");
+                //System.out.println(value + " <" + key + "> strings at index 3-5");
                 for(String word : remainingWords)
                 {
                     if(word.substring(3, 5).equals(key))
@@ -483,8 +494,8 @@ public class Main {
         double bestWordScore = 0;
         String bestWord = "";
         ArrayList<String> bestWordList = new ArrayList<>();
-        //ArrayList<String> problemWords = new ArrayList<>();
-        //problemWords = FindProblemSubstrings(wordList, 6 - attemptNumber);
+        ArrayList<String> problemWords = new ArrayList<>();
+        problemWords = FindProblemSubstrings(wordList, 6 - attemptNumber);
 
         for (String word : wordList) {
             double wordScore = 0;
@@ -506,12 +517,11 @@ public class Main {
                     hasRepeats = true;
                 }
             }
+            
             wordScore = letterHeatmapScore + letterTotalsScore + wordsWithLetterScore;
-            if (attemptNumber > 0) {
-                //System.out.println("Word: " + word + ", " + wordScore);
-            }
-            wordScore = hasRepeats && attemptNumber < 2 ? wordScore * .85 : wordScore;
-            //wordScore = problemWords.contains(word) ? wordScore * .85 : wordScore;
+            wordScore = hasRepeats && attemptNumber < 2 ? wordScore * .90 : wordScore;
+            wordScore = problemWords.contains(word) && attemptNumber < 2 ? wordScore * .85 : wordScore;
+
             if (wordScore > bestWordScore && !word.equals("stare")) {
                 bestWordList.clear();
                 bestWordList.add(word);
